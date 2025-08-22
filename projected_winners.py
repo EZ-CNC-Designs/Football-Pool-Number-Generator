@@ -6,21 +6,27 @@ from bs4 import BeautifulSoup
 # Input the numbers from the users
 # Apply a score to the user and return the user with the score
 class ProjectedWinners:
+    """Determines the probability of specific numbers being called in a NFL pool."""
     def __init__(self):
         self.user_nums = {}
+        self.scores = []
         
 
-    def final_scores(self):
+    def final_scores(self, last_season_year):
+        """Scrape for NFL game final scores. Enter the last full seasons year."""
+        last_season_year = int(last_season_year)
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"}
-        response = requests.get('https://www.footballdb.com/games/index.html', headers=headers)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
-        result = soup.find_all('td', class_='center')
-        self.scores = []
-        for td in result:
-            text = td.text.strip()
-            if text.isdigit():
-                self.scores.append(int(text))
+        for season in range(last_season_year-9, last_season_year+1):
+            print(f'Currently scraping {season} season')
+            response = requests.get(f'https://www.footballdb.com/games/index.html/{season}', headers=headers)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.text, 'html.parser')
+            result = soup.find_all('td', class_='center')
+            
+            for td in result:
+                text = td.text.strip()
+                if text.isdigit():
+                    self.scores.append(int(text))
         
 
     def calc_prob(self):
@@ -35,14 +41,13 @@ class ProjectedWinners:
             if number in totals_dict:
                 totals_dict[number] += 1
                 totals_dict['total'] += 1
-
-        print(totals_dict)
+        print(f'\nTotals:')
+        print(f'{totals_dict}')
+        print(f'\nProbabilities')
         for key, value in totals_dict.items():
-            prob = value/570
+            prob = value/totals_dict['total'] # 5700 is the total number of games over 10 years
             print(f'{key}: ', end='')
-            print(round(prob, 2))
-
-        
+            print(round(prob, 3)) # Round to 3 decimal places
 
 
     def input_users_nums(self):
@@ -56,6 +61,6 @@ class ProjectedWinners:
 
 
 run_projection = ProjectedWinners()
-run_projection.final_scores()
+run_projection.final_scores(2024)
 run_projection.calc_prob()
 # run_projection.input_users_nums()
