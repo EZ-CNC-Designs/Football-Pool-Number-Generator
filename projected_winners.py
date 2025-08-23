@@ -1,4 +1,4 @@
-import requests, time
+import requests, json
 from bs4 import BeautifulSoup
 
 # Pull the numbers from last season
@@ -8,14 +8,19 @@ from bs4 import BeautifulSoup
 class ProjectedWinners:
     """Determines the probability of specific numbers being called in a NFL pool."""
     def __init__(self):
-        self.user_nums = {}
-        self.scores = []
+        self.scores = [] # All the football scores that are scraped
+        self.user_nums = {0:[], 1:[], 2:[], 3:[], 4:[], 5:[], 6:[], 7:[], 8:[], 9:[], 10:[],
+                          11:[], 12:[], 13:[], 14:[], 15:[], 16:[], 17:[], 18:[], 19:[], 20:[],
+                          21:[], 22:[], 23:[], 24:[]} # User numbers that are input
         
 
-    def final_scores(self, last_season_year):
-        """Scrape for NFL game final scores. Enter the last full seasons year."""
-        last_season_year = int(last_season_year)
+    def final_scores(self, last_season_year: int):
+        """Scrape for NFL game final scores for the last 10 seasons.
+        Enter the last full seasons year."""
+
+        last_season_year = int(last_season_year) # Convert to an integer
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"}
+        # Scrape the last 10 seasons
         for season in range(last_season_year-9, last_season_year+1):
             print(f'Currently scraping {season} season')
             response = requests.get(f'https://www.footballdb.com/games/index.html/{season}', headers=headers)
@@ -30,37 +35,55 @@ class ProjectedWinners:
         
 
     def calc_prob(self):
-        """Determine probabilities"""
+        """Determine probabilities of 0-9 being called."""
         all_last_nums = []
         for number in self.scores:
             last_number = number % 10
             all_last_nums.append(last_number)
         totals_dict = {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 'total':0}
+        prob_dict = {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 'total':0}
        
+       # Count the number of instances
         for number in all_last_nums:
             if number in totals_dict:
                 totals_dict[number] += 1
                 totals_dict['total'] += 1
         print(f'\nTotals:')
-        print(f'{totals_dict}')
-        print(f'\nProbabilities')
+        print(totals_dict)
+        
+        # Calculate the probabilities
         for key, value in totals_dict.items():
             prob = value/totals_dict['total'] # 5700 is the total number of games over 10 years
-            print(f'{key}: ', end='')
-            print(round(prob, 3)) # Round to 3 decimal places
+            prob_dict[key] = round(prob, 3)
+            # print(f'{key}: ', end='')
+            # print(round(prob, 3)) # Round to 3 decimal places
+
+        print(f'\nProbabilities')
+        print(prob_dict)
+
+        # Write to a file
+        with open('number_probability.json', 'w') as file:
+            json.dump(obj=prob_dict, fp=file, indent=4)
 
 
     def input_users_nums(self):
         """Build a dictionary with each users number pairs."""
-        self.user_nums = {}
         for user in range(25):
-            user_group1 = input(f"Enter person {user+1}'s first values (e.g. 0 9):" )
-            self.user_nums.update(user)
+            user_group1 = input(f"Enter person {user}'s first values (e.g. 0 9):" )
+            user_group2 = input(f"Enter person {user}'s second values (e.g. 1 3):" )
+            user_num_list = []
+            for user_num in user_group1.split() + user_group2.split():
+                user_num_list.append(int(user_num))
+            self.user_nums[user]=user_num_list
+        print(self.user_nums)
 
-            user_group2 = input(f"Enter the person {user+1}'s second values (e.g. 1 3):" )
+    def find_winners(self):
+        """Rank the weekly winners based on probability."""
+        pass
 
 
-run_projection = ProjectedWinners()
-run_projection.final_scores(2024)
-run_projection.calc_prob()
+run_projection = ProjectedWinners() # Create an instance
+# run_projection.final_scores(2024) # Current year is 2025
+# run_projection.calc_prob()
+run_projection.input_users_nums()
 # run_projection.input_users_nums()
