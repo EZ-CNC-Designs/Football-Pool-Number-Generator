@@ -11,7 +11,7 @@ class ProjectedWinners:
         self.scores = [] # All the football scores that are scraped
         self.user_nums = {0:[], 1:[], 2:[], 3:[], 4:[], 5:[], 6:[], 7:[], 8:[], 9:[], 10:[],
                           11:[], 12:[], 13:[], 14:[], 15:[], 16:[], 17:[], 18:[], 19:[], 20:[],
-                          21:[], 22:[], 23:[], 24:[]} # User numbers that are input
+                          21:[], 22:[], 23:[], 24:[]} # User numbers that are input from both categories
         
 
     def final_scores(self, last_season_year: int):
@@ -62,28 +62,50 @@ class ProjectedWinners:
         print(prob_dict)
 
         # Write to a file
-        with open('number_probability.json', 'w') as file:
+        with open(file='number_probability.json', mode='w') as file:
             json.dump(obj=prob_dict, fp=file, indent=4)
 
 
     def input_users_nums(self):
         """Build a dictionary with each users number pairs."""
-        for user in range(25):
-            user_group1 = input(f"Enter person {user}'s first values (e.g. 0 9):" )
-            user_group2 = input(f"Enter person {user}'s second values (e.g. 1 3):" )
-            user_num_list = []
-            for user_num in user_group1.split() + user_group2.split():
-                user_num_list.append(int(user_num))
-            self.user_nums[user]=user_num_list
-        print(self.user_nums)
+        for user in range(25):# 25
+            # User input for the first 2 numbers
+            user_group1_list = []
+            while len(user_group1_list) != 2:
+                user_group1 = input(f"Enter person {user}'s first values (e.g. 0 9):" )
+                user_group1_list = user_group1.split()
+           
+           # User input for the other 2 numbers
+            user_group2_list = []
+            while len(user_group2_list) != 2:
+                user_group2 = input(f"Enter person {user}'s second values (e.g. 1 3):" )
+                user_group2_list = user_group2.split()
+
+                # Add the results to the main list
+                user_both_lists = user_group1_list + user_group2_list
+                self.user_nums[user]=user_both_lists
+
 
     def find_winners(self):
         """Rank the weekly winners based on probability."""
-        pass
-
+        # Open number probability data
+        user_win_probability = {0:0, 1:0, 2:0}
+        with open(file='number_probability.json', mode='r') as file:
+            data = json.load(fp=file)
+            print(data)
+        # Loop through the users numbers
+        for user in self.user_nums: # Loop through users
+            temp_list = []
+            for user_num in self.user_nums[user]: # Loop through users numbers
+                percent_chance = data[user_num]
+                temp_list.append(percent_chance)
+            total_percent = sum(temp_list)
+            total_calculation = round(total_percent * 10, 3)
+            print(user, total_calculation)
+            
 
 run_projection = ProjectedWinners() # Create an instance
 # run_projection.final_scores(2024) # Current year is 2025
 # run_projection.calc_prob()
 run_projection.input_users_nums()
-# run_projection.input_users_nums()
+run_projection.find_winners()
