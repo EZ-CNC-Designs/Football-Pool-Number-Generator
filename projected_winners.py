@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 # Find the probability of each number & assign it a score
 # Input the numbers from the users
 # Apply a score to the user and return the user with the score
-class ProjectedWinners:
+class ProjectedNFLPoolWinners:
     """Determines the probability of specific numbers being called in a NFL pool."""
     def __init__(self):
         self.scores = [] # All the football scores that are scraped
@@ -53,7 +53,7 @@ class ProjectedWinners:
         
         # Calculate the probabilities
         for key, value in totals_dict.items():
-            prob = value/totals_dict['total'] # 5700 is the total number of games over 10 years
+            prob = value/totals_dict['total'] # 5700 is the total number of games over 10 years including playoffs
             prob_dict[key] = round(prob, 3)
             # print(f'{key}: ', end='')
             # print(round(prob, 3)) # Round to 3 decimal places
@@ -68,6 +68,9 @@ class ProjectedWinners:
 
     def input_users_nums(self):
         """Build a dictionary with each users number pairs."""
+        # TODO
+        # Automate this
+        
         for user in range(25):# 25
             # User input for the first 2 numbers
             user_group1_list = []
@@ -89,7 +92,8 @@ class ProjectedWinners:
     def find_winners(self):
         """Rank the weekly winners based on probability."""
         # Open number probability data
-        user_win_probability = {0:0, 1:0, 2:0}
+        # TODO
+        # user_win_probability = {0:0, 1:0, 2:0}
         with open(file='number_probability.json', mode='r') as file:
             data = json.load(fp=file)
             print(data)
@@ -99,12 +103,14 @@ class ProjectedWinners:
             for user_num in self.user_nums[user]: # Loop through users numbers
                 percent_chance = data[user_num]
                 temp_list.append(percent_chance)
-            total_percent = sum(temp_list)
-            total_calculation = round(total_percent * 10, 3)
-            print(user, total_calculation)
+            total_percent_row = sum(temp_list[0:2])
+            total_percent_column = sum(temp_list[2:4])
+            total_calculation = round(total_percent_row * total_percent_column, 4)
+            total_calculation = total_calculation * 100 # * 100 for readability (e.g. 0.045 = 4.5%)
+            print(f'{user}, round({total_calculation}, 2)%')
             
 
-run_projection = ProjectedWinners() # Create an instance
+run_projection = ProjectedNFLPoolWinners() # Create an instance
 # run_projection.final_scores(2024) # Current year is 2025
 # run_projection.calc_prob()
 run_projection.input_users_nums()
